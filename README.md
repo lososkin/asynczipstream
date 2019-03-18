@@ -1,9 +1,6 @@
 
 # python-zipstream
 
-[![Build Status](https://travis-ci.org/allanlei/python-zipstream.png?branch=master)](https://travis-ci.org/allanlei/python-zipstream)
-[![Coverage Status](https://coveralls.io/repos/allanlei/python-zipstream/badge.png)](https://coveralls.io/r/allanlei/python-zipstream)
-
 zipstream.py is a zip archive generator based on python 3.3's zipfile.py. It was created to
 generate a zip file generator for streaming (ie web apps). This is beneficial for when you
 want to provide a downloadable archive of a large collection of regular files, which would be infeasible to
@@ -78,12 +75,12 @@ archives.
 ## Installation
 
 ```
-pip install zipstream
+pip install zipstream-new
 ```
 
 ## Requirements
 
-  * Python 2.6, 2.7, 3.2, 3.3, pypy
+  * Python 2.6+, 3.2+, pypy
 
 ## Examples
 
