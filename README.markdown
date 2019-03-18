@@ -95,12 +95,12 @@ from flask import Response
 @app.route('/package.zip', methods=['GET'], endpoint='zipball')
 def zipball():
     def generator():
-    	z = zipstream.ZipFile(mode='w', compression=ZIP_DEFLATED)
+        z = zipstream.ZipFile(mode='w', compression=ZIP_DEFLATED)
 
-    	z.write('/path/to/file')
+        z.write('/path/to/file')
 
-    	for chunk in z:
-    		yield chunk
+        for chunk in z:
+            yield chunk
 
     response = Response(generator(), mimetype='application/zip')
     response.headers['Content-Disposition'] = 'attachment; filename={}'.format('files.zip')
@@ -110,8 +110,8 @@ def zipball():
 
 @app.route('/package.zip', methods=['GET'], endpoint='zipball')
 def zipball():
-	z = zipstream.ZipFile(mode='w', compression=ZIP_DEFLATED)
-	z.write('/path/to/file')
+    z = zipstream.ZipFile(mode='w', compression=ZIP_DEFLATED)
+    z.write('/path/to/file')
 
     response = Response(z, mimetype='application/zip')
     response.headers['Content-Disposition'] = 'attachment; filename={}'.format('files.zip')
@@ -124,8 +124,8 @@ def zipball():
 from django.http import StreamingHttpResponse
 
 def zipball(request):
-	z = zipstream.ZipFile(mode='w', compression=ZIP_DEFLATED)
-	z.write('/path/to/file')
+    z = zipstream.ZipFile(mode='w', compression=ZIP_DEFLATED)
+    z.write('/path/to/file')
 
     response = StreamingHttpResponse(z, content_type='application/zip')
     response['Content-Disposition'] = 'attachment; filename={}'.format('files.zip')
