@@ -113,6 +113,27 @@ def zipball():
     response = Response(z, mimetype='application/zip')
     response.headers['Content-Disposition'] = 'attachment; filename={}'.format('files.zip')
     return response
+
+# Partial flushing of the zip before closing
+
+@app.route('/package.zip', methods=['GET'], endpoint='zipball')
+def zipball():
+    def generate_zip_with_manifest():
+        z = zipstream.ZipFile(mode='w', compression=ZIP_DEFLATED)
+
+        manifest = []
+        for filename in os.listdir('/path/to/files'):
+            z.write(os.path.join('/path/to/files', filename), arcname=filename)
+            yield from z.flush()
+            manifest.append(filename)
+
+        z.write_str('manifest.json', json.dumps(manifest).encode())
+
+        yield from z
+
+    response = Response(z, mimetype='application/zip')
+    response.headers['Content-Disposition'] = 'attachment; filename={}'.format('files.zip')
+    return response
 ```
 
 ### django 1.5+

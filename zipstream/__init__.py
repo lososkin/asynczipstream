@@ -178,9 +178,8 @@ class ZipFile(zipfile.ZipFile):
         self.paths_to_write = []
 
     def __iter__(self):
-        for kwargs in self.paths_to_write:
-            for data in self.__write(**kwargs):
-                yield data
+        for data in self.flush():
+            yield data
         for data in self.__close():
             yield data
 
@@ -189,6 +188,12 @@ class ZipFile(zipfile.ZipFile):
 
     def __exit__(self, type, value, traceback):
         self.close()
+
+    def flush(self):
+        while self.paths_to_write:
+            kwargs = self.paths_to_write.pop()
+            for data in self.__write(**kwargs):
+                yield data
 
     @property
     def comment(self):
