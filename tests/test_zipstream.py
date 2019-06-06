@@ -92,6 +92,31 @@ class ZipStreamTestCase(unittest.TestCase):
 
         os.remove(f.name)
 
+    def test_partial_writes(self):
+        z = zipstream.ZipFile(mode='w')
+        f = tempfile.NamedTemporaryFile(suffix='zip', delete=False)
+
+        with open(SAMPLE_FILE_RTF, 'rb') as fp:
+            z.writestr('sample1.rtf', fp.read())
+
+        for chunk in z.flush():
+            f.write(chunk)
+
+        with open(SAMPLE_FILE_RTF, 'rb') as fp:
+            z.writestr('sample2.rtf', fp.read())
+
+        for chunk in z.flush():
+            f.write(chunk)
+
+        for chunk in z:
+            f.write(chunk)
+        
+        f.close()
+        z2 = zipfile.ZipFile(f.name, 'r')
+        self.assertFalse(z2.testzip())
+
+        os.remove(f.name)
+
     def test_write_iterable_no_archive(self):
         z = zipstream.ZipFile(mode='w')
         self.assertRaises(TypeError, z.write_iter, iterable=range(10))
