@@ -92,7 +92,7 @@ from flask import Response
 @app.route('/package.zip', methods=['GET'], endpoint='zipball')
 def zipball():
     def generator():
-        z = zipstream.ZipFile(mode='w', compression=ZIP_DEFLATED)
+        z = zipstream.ZipFile(mode='w', compression=zipstream.ZIP_DEFLATED)
 
         z.write('/path/to/file')
 
@@ -107,7 +107,7 @@ def zipball():
 
 @app.route('/package.zip', methods=['GET'], endpoint='zipball')
 def zipball():
-    z = zipstream.ZipFile(mode='w', compression=ZIP_DEFLATED)
+    z = zipstream.ZipFile(mode='w', compression=zipstream.ZIP_DEFLATED)
     z.write('/path/to/file')
 
     response = Response(z, mimetype='application/zip')
@@ -119,7 +119,7 @@ def zipball():
 @app.route('/package.zip', methods=['GET'], endpoint='zipball')
 def zipball():
     def generate_zip_with_manifest():
-        z = zipstream.ZipFile(mode='w', compression=ZIP_DEFLATED)
+        z = zipstream.ZipFile(mode='w', compression=zipstream.ZIP_DEFLATED)
 
         manifest = []
         for filename in os.listdir('/path/to/files'):
@@ -142,7 +142,7 @@ def zipball():
 from django.http import StreamingHttpResponse
 
 def zipball(request):
-    z = zipstream.ZipFile(mode='w', compression=ZIP_DEFLATED)
+    z = zipstream.ZipFile(mode='w', compression=zipstream.ZIP_DEFLATED)
     z.write('/path/to/file')
 
     response = StreamingHttpResponse(z, content_type='application/zip')
