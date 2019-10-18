@@ -191,7 +191,7 @@ class ZipFile(zipfile.ZipFile):
 
     def flush(self):
         while self.paths_to_write:
-            kwargs = self.paths_to_write.pop()
+            kwargs = self.paths_to_write.pop(0)
             for data in self.__write(**kwargs):
                 yield data
 
