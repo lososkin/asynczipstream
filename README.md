@@ -167,3 +167,5 @@ def GET(self):
 With python version > 2.6, just run the following command: `python -m unittest discover`
 
 Alternatively, you can use `nose`.
+
+If you want to run the tests on all supported Python versions, run `tox`.

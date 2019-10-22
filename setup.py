@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='zipstream-new',
-    version='1.1.6',
+    version='1.1.7',
     description='Zipfile generator that takes input files as well as streams',
     long_description=long_description,
     long_description_content_type="text/markdown",
