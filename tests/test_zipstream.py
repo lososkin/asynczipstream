@@ -3,6 +3,7 @@ from __future__ import unicode_literals, print_function
 
 import os
 import tempfile
+import time
 import unittest
 import zipstream
 import zipfile
@@ -73,6 +74,28 @@ class ZipStreamTestCase(unittest.TestCase):
 
         z2 = zipfile.ZipFile(f.name, 'r')
         self.assertFalse(z2.testzip())
+
+        os.remove(f.name)
+
+    def test_write_iterable_with_date_time(self):
+        file_name_in_zip = "data_datetime"
+        file_date_time_in_zip = time.strptime("2011-04-19 22:30:21", "%Y-%m-%d %H:%M:%S")
+
+        z = zipstream.ZipFile(mode='w')
+        def string_generator():
+            for _ in range(10):
+                yield b'zipstream\x01\n'
+        z.write_iter(iterable=string_generator(), arcname=file_name_in_zip, date_time=file_date_time_in_zip)
+
+        f = tempfile.NamedTemporaryFile(suffix='zip', delete=False)
+        for chunk in z:
+            f.write(chunk)
+        f.close()
+
+        z2 = zipfile.ZipFile(f.name, 'r')
+        self.assertFalse(z2.testzip())
+
+        self.assertEqual(file_date_time_in_zip[0:5], z2.getinfo(file_name_in_zip).date_time[0:5])
 
         os.remove(f.name)
 
