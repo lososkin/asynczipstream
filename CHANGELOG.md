@@ -2,7 +2,7 @@
 
 This file details the changes that were made after forking v1.1.4 from https://github.com/allanlei/python-zipstream.
 
-## Unreleased
+## v1.1.8 (2020-09-14)
 * New datetime parameter in write_iter (https://github.com/arjan-s/python-zipstream/pull/8)
 
 ## v1.1.7 (2019-10-22)
