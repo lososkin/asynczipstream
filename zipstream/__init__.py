@@ -220,20 +220,20 @@ class ZipFile(zipfile.ZipFile):
         kwargs = {'filename': filename, 'arcname': arcname, 'compress_type': compress_type}
         self.paths_to_write.append(kwargs)
 
-    def write_iter(self, arcname, iterable, compress_type=None, buffer_size=None):
+    def write_iter(self, arcname, iterable, compress_type=None, buffer_size=None, date_time=None):
         """Write the bytes iterable `iterable` to the archive under the name `arcname`."""
-        kwargs = {'arcname': arcname, 'iterable': iterable, 'compress_type': compress_type, 'buffer_size': buffer_size}
+        kwargs = {'arcname': arcname, 'iterable': iterable, 'compress_type': compress_type, 'buffer_size': buffer_size, 'date_time': date_time}
         self.paths_to_write.append(kwargs)
 
-    def writestr(self, arcname, data, compress_type=None, buffer_size=None):
+    def writestr(self, arcname, data, compress_type=None, buffer_size=None, date_time=None):
         """
         Writes a str into ZipFile by wrapping data as a generator
         """
         def _iterable():
             yield data
-        return self.write_iter(arcname, _iterable(), compress_type=compress_type, buffer_size=buffer_size)
+        return self.write_iter(arcname, _iterable(), compress_type=compress_type, buffer_size=buffer_size, date_time=date_time)
 
-    def __write(self, filename=None, iterable=None, arcname=None, compress_type=None, buffer_size=None):
+    def __write(self, filename=None, iterable=None, arcname=None, compress_type=None, buffer_size=None, date_time=None):
         """Put the bytes from filename into the archive under the name
         `arcname`."""
         if not self.fp:
@@ -248,7 +248,11 @@ class ZipFile(zipfile.ZipFile):
             mtime = time.localtime(st.st_mtime)
             date_time = mtime[0:6]
         else:
-            st, isdir, date_time = None, False, time.localtime()[0:6]
+            st, isdir = None, False
+            if date_time is not None and isinstance(date_time, time.struct_time):
+                date_time = date_time[0:6]
+            if date_time is None:
+                date_time = time.localtime()[0:6]
         # Create ZipInfo instance to store file information
         if arcname is None:
             arcname = filename
