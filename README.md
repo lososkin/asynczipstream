@@ -131,7 +131,7 @@ def zipball():
 
         yield from z
 
-    response = Response(z, mimetype='application/zip')
+    response = Response(generate_zip_with_manifest(), mimetype='application/zip')
     response.headers['Content-Disposition'] = 'attachment; filename={}'.format('files.zip')
     return response
 ```
