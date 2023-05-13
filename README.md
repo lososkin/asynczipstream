@@ -1,5 +1,5 @@
 
-# python-zipstream-aio
+# asynczipstream
 
 zipstream.py is a zip archive generator based on python 3.3's zipfile.py. It was created to
 generate a zip file generator for streaming (ie web apps). This is beneficial for when you
