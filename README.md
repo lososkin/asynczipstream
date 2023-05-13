@@ -1,5 +1,5 @@
 
-# python-zipstream
+# python-zipstream-aio
 
 zipstream.py is a zip archive generator based on python 3.3's zipfile.py. It was created to
 generate a zip file generator for streaming (ie web apps). This is beneficial for when you
@@ -11,14 +11,18 @@ the zip archive. For example, the following code snippet would write a zip
 archive containing files from 'path' to a normal file:
 
 ```python
-import zipstream
+import asynczipstream
+import asyncio
 
-z = zipstream.ZipFile()
-z.write('path/to/files')
+async def main():
+    z = asynczipstream.ZipFile()
+    z.write('path/to/files')
 
-with open('zipfile.zip', 'wb') as f:
-    for data in z:
-        f.write(data)
+    with open('zipfile.zip', 'wb') as f:
+        async for data in z:
+            f.write(data)
+
+asyncio.run(main())
 ```
 
 zipstream also allows to take as input a byte string iterable and to generate
@@ -27,145 +31,118 @@ This avoids storing large files on disk or in memory.
 To do so you could use something like this snippet:
 
 ```python
-def iterable():
-    for _ in xrange(10):
-        yield b'this is a byte string\x01\n'
+import asynczipstream
+import asyncio
 
-z = zipstream.ZipFile()
-z.write_iter('my_archive_iter', iterable())
+async def main():
+    async def iterable():
+        for _ in range(10):
+            yield b'this is a byte string\x01\n'
 
-with open('zipfile.zip', 'wb') as f:
-    for data in z:
-        f.write(data)
+    z = asynczipstream.ZipFile()
+    z.write_iter('my_archive_iter', iterable())
+
+    with open('zipfile.zip', 'wb') as f:
+        async for data in z:
+            f.write(data)
+
+asyncio.run(main())
 ```
 
 Of course both approach can be combined:
 
 ```python
-def iterable():
-    for _ in xrange(10):
-        yield b'this is a byte string\x01\n'
+import asynczipstream
+import asyncio
 
-z = zipstream.ZipFile()
-z.write('path/to/files', 'my_archive_files')
-z.write_iter('my_archive_iter', iterable())
+async def main():
+    async def iterable():
+        for _ in range(10):
+            yield b'this is a byte string\x01\n'
 
-with open('zipfile.zip', 'wb') as f:
-    for data in z:
-        f.write(data)
+    z = asynczipstream.ZipFile()
+    z.write('path/to/files', 'my_archive_files')
+    z.write_iter('my_archive_iter', iterable())
+
+    with open('zipfile.zip', 'wb') as f:
+        async for data in z:
+            f.write(data)
+
+asyncio.run(main())
 ```
 
-Since recent versions of web.py support returning iterators of strings to be
-sent to the browser, to download a dynamically generated archive, you could
-use something like this snippet:
-
-```python
-def GET(self):
-    path = '/path/to/dir/of/files'
-    zip_filename = 'files.zip'
-    web.header('Content-type' , 'application/zip')
-    web.header('Content-Disposition', 'attachment; filename="%s"' % (
-        zip_filename,))
-    return zipstream.ZipFile(path)
-```
-
-If the zlib module is available, zipstream.ZipFile can generate compressed zip
+If the zlib module is available, asynczipstream.ZipFile can generate compressed zip
 archives.
 
 ## Installation
 
 ```
-pip install zipstream-new
+pip install asynczipstream
 ```
 
 ## Requirements
 
-  * Python 2.6+, 3.2+, pypy
+  * Python 3.8+
 
-## Examples
 
-### flask
-
-```python
-from flask import Response
-
-@app.route('/package.zip', methods=['GET'], endpoint='zipball')
-def zipball():
-    def generator():
-        z = zipstream.ZipFile(mode='w', compression=zipstream.ZIP_DEFLATED)
-
-        z.write('/path/to/file')
-
-        for chunk in z:
-            yield chunk
-
-    response = Response(generator(), mimetype='application/zip')
-    response.headers['Content-Disposition'] = 'attachment; filename={}'.format('files.zip')
-    return response
-
-# or
-
-@app.route('/package.zip', methods=['GET'], endpoint='zipball')
-def zipball():
-    z = zipstream.ZipFile(mode='w', compression=zipstream.ZIP_DEFLATED)
-    z.write('/path/to/file')
-
-    response = Response(z, mimetype='application/zip')
-    response.headers['Content-Disposition'] = 'attachment; filename={}'.format('files.zip')
-    return response
-
-# Partial flushing of the zip before closing
-
-@app.route('/package.zip', methods=['GET'], endpoint='zipball')
-def zipball():
-    def generate_zip_with_manifest():
-        z = zipstream.ZipFile(mode='w', compression=zipstream.ZIP_DEFLATED)
-
-        manifest = []
-        for filename in os.listdir('/path/to/files'):
-            z.write(os.path.join('/path/to/files', filename), arcname=filename)
-            yield from z.flush()
-            manifest.append(filename)
-
-        z.write_str('manifest.json', json.dumps(manifest).encode())
-
-        yield from z
-
-    response = Response(generate_zip_with_manifest(), mimetype='application/zip')
-    response.headers['Content-Disposition'] = 'attachment; filename={}'.format('files.zip')
-    return response
-```
-
-### django 1.5+
+### aiohttp Example
 
 ```python
-from django.http import StreamingHttpResponse
+from aiohttp import web, hdrs
+import asynczipstream
 
-def zipball(request):
-    z = zipstream.ZipFile(mode='w', compression=zipstream.ZIP_DEFLATED)
-    z.write('/path/to/file')
+async def handle_license(request):
+    """
+        Example with file from disk
+    """
+    filename = "license.zip"
+    response = web.StreamResponse(
+        status=200,
+        headers={
+            hdrs.CONTENT_TYPE: "application/octet-stream",
+            hdrs.CONTENT_DISPOSITION: (f"attachment; " f'filename="{filename}"; '),
+        },
+    )
+    await response.prepare(request)
 
-    response = StreamingHttpResponse(z, content_type='application/zip')
-    response['Content-Disposition'] = 'attachment; filename={}'.format('files.zip')
+    z = asynczipstream.ZipFile()
+    z.write('LICENSE')
+    async for data in z:
+        await response.write(data)
     return response
-```
 
-### webpy
+async def handle_readme(request):
+    """
+        Example with file from iterable object
+    """
+    filename = "readme.zip"
+    response = web.StreamResponse(
+        status=200,
+        headers={
+            hdrs.CONTENT_TYPE: "application/octet-stream",
+            hdrs.CONTENT_DISPOSITION: (f"attachment; " f'filename="{filename}"; '),
+        },
+    )
+    await response.prepare(request)
 
-```python
-def GET(self):
-    path = '/path/to/dir/of/files'
-    zip_filename = 'files.zip'
-    web.header('Content-type' , 'application/zip')
-    web.header('Content-Disposition', 'attachment; filename="%s"' % (
-        zip_filename,))
-    return zipstream.ZipFile(path)
+    async def iterable(filename):
+        with open(filename, "rb") as f:
+            yield f.readline()
+
+    z = asynczipstream.ZipFile()
+    z.write_iter('README.md', iterable("README.md"))
+    async for data in z:
+        await response.write(data)
+    return response
+
+
+app = web.Application()
+app.add_routes([web.get('/license', handle_license),web.get('/readme', handle_readme)])
+
+if __name__ == '__main__':
+    web.run_app(app)
 ```
 
 ## Running tests
 
-With python version > 2.6, just run the following command: `python -m unittest discover`
-
-Alternatively, you can use `nose`.
-
-If you want to run the tests on all supported Python versions, run `tox`.
+Just run the following command: `python -m unittest discover`
